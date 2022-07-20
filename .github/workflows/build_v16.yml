@@ -16,6 +16,7 @@ env:
   YOUTUBE_URL: "https://objects.n23.io/4bcb968ea2654ee1be650d6be455725e:bucket1/YouTube_16.42.3.ipa"
   THEOS: ${{ github.workspace }}/theos
   GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+  BRANCH: "source"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -32,8 +33,8 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v3
         with:
-          ref: source
-          path: source
+          ref: ${{ env.BRANCH }}
+          path: ${{ env.BRANCH }}
           submodules: recursive
           
       - name: Setup ENVs
@@ -80,18 +81,18 @@ jobs:
       - name: Download uYou & prepare YouTube iPA
         run: |
           curl "https://raw.githubusercontent.com/Muirey03/RemoteLog/master/RemoteLog.h" --output "$THEOS/include/RemoteLog.h"
-          curl "https://miro92.com/repo/debs/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" --output "./main/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb"
-          wget "$YOUTUBE_URL" --no-verbose -O ./main/YouTube.ipa
-          dpkg-deb -x "./main/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" ./main/Tweaks/uYou/
-          unzip -q ./main/YouTube.ipa -d ./main/tmp
-          rm -rf ./main/tmp/Payload/YouTube.app/PlugIns/*
-          cp -R ./main/Extensions/*.appex ./main/tmp/Payload/YouTube.app/PlugIns
+          curl "https://miro92.com/repo/debs/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" --output "./${{ env.BRANCH }}/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb"
+          wget "$YOUTUBE_URL" --no-verbose -O ./${{ env.BRANCH }}/YouTube.ipa
+          dpkg-deb -x "./${{ env.BRANCH }}/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" ./${{ env.BRANCH }}/Tweaks/uYou/
+          unzip -q ./${{ env.BRANCH }}/YouTube.ipa -d ./${{ env.BRANCH }}/tmp
+          rm -rf ./${{ env.BRANCH }}/tmp/Payload/YouTube.app/PlugIns/*
+          cp -R ./${{ env.BRANCH }}/Extensions/*.appex ./${{ env.BRANCH }}/tmp/Payload/YouTube.app/PlugIns
 
       - name: Fix compiling && Build Package
         id: build_package
         run: |
-          cd ${{ github.workspace }}/main
-          (cd ${{ github.workspace }}/main/Tweaks/YouPiP && sed -i '' "14s/$/ AVFoundation UIKit/" Makefile)
+          cd ${{ github.workspace }}/${{ env.BRANCH }}
+          (cd ${{ github.workspace }}/${{ env.BRANCH }}/Tweaks/YouPiP && sed -i '' "14s/$/ AVFoundation UIKit/" Makefile)
           make package FINALPACKAGE=1
           (mv "packages/$(ls -t packages | head -n1)" "packages/uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa")
           echo "::set-output name=package::$(ls -t packages | head -n1)"
@@ -100,7 +101,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: uYouPlus_${{ env.YOUTUBE_VERSION  }}
-          path: ${{ github.workspace }}/main/packages/${{ steps.build_package.outputs.package }}
+          path: ${{ github.workspace }}/${{ env.BRANCH }}/packages/${{ steps.build_package.outputs.package }}
           if-no-files-found: error
 
       - name: Create Release
@@ -116,7 +117,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/main/packages/${{ steps.build_package.outputs.package }}
+          asset_path: ${{ github.workspace }}/${{ env.BRANCH }}/packages/${{ steps.build_package.outputs.package }}
           asset_name: uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa
           asset_content_type: application/vnd.debian.binary-package
 
