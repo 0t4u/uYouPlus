@@ -139,5 +139,6 @@ jobs:
       - name: Commit & Push changes
         uses: actions-js/push@master
         with:
+          directory: main
           github_token: ${{ secrets.PERSONAL_TOKEN }}
           message: "bot: auto update links"
