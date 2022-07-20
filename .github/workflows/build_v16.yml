@@ -1,4 +1,4 @@
-# This is a basic workflow to help you get started with Actions
+# Build uYouPlus using YouTube v16
 
 name: Build v16
 
@@ -39,7 +39,7 @@ jobs:
         run: | 
           brew install grep
           curl -s "https://raw.githubusercontent.com/MiRO92/uYou-for-YouTube/main/README.md" 2>&1 |
-          ggrep -Po "https:\/\/miro92\.com\/repo\/depictions\/com\.miro\.uyou\/iPA\/YouTube_[0-9.]*_uYou_[0-9.]*\.ipa" h.txt |
+          ggrep -Po "https:\/\/miro92\.com\/repo\/depictions\/com\.miro\.uyou\/iPA\/YouTube_[0-9.]*_uYou_[0-9.]*\.ipa" |
           ggrep -Po "uYou_[0-9.]*[^.ipa]" |
           head -1l |
           tr -d "uYou_"
