@@ -6,6 +6,9 @@ Please ask for help and report issues in the [original repository](https://githu
 
 IPAs are built as it. No support will be provided.
 
+## Install
+[Install on AltStore](https://links.nekos.space/altstore/install?url=https://nightly.link/0t4u/uYouPlus/workflows/build_v16/main/uYouPlus_16.42.3.zip)
+
 ## Versions
 | Youtube Version | Supported? | Build Status  |
 | --------------- | ---------- | ------------- |
