@@ -130,9 +130,9 @@ jobs:
       - name: Modify Main README
         run: |
           cd main
-          ORIG_LINE="$(ggrep -Po "\(https:\/\/links\.nekos\.space\/altstore\/install\?url=https:\/\/github\.com\/0t4u\/uYouPlus\/releases\/download\/v[0-9.]*-[0-9.]*-\([0-9a-z]*\)\/uYouPlus_[0-9.]*_[0-9.]*_[0-9a-z]*\.ipa\) \| \[!\[Build v16\]" README.md)"
+          ORIG_LINE="$(ggrep -Po "\(https:\/\/links\.nekos\.space\/altstore\/install\?url=https:\/\/github\.com\/0t4u\/uYouPlus\/releases\/download\/v[0-9.]*-[0-9.]*-([0-9a-z]*)\/uYouPlus_[0-9.]*_[0-9.]*_[0-9a-z]*\.ipa\) \| \[!\[Build v16\]" README.md)"
           ESCAPED_ORIG=$(printf '%s\n' "$ORIG_LINE" | sed -e 's/[]\/$*.^[]/\\&/g')
-          MOD_LINE="$(ggrep -Po "\(https:\/\/links\.nekos\.space\/altstore\/install\?url=https:\/\/github\.com\/0t4u\/uYouPlus\/releases\/download\/v[0-9.]*-[0-9.]*-\([0-9a-z]*\)\/uYouPlus_[0-9.]*_[0-9.]*_[0-9a-z]*\.ipa\) \| \[!\[Build v16\]" README.md | sed 's/v[0-9.]*-[0-9.]*-\([0-9a-z]*\)/v${{ env.YOUTUBE_VERSION  }}-${{ env.UYOU_VERSION }}-(${{ env.SHORT_SHA }})/g' | sed 's/[0-9.]*_[0-9.]*_[0-9a-z]*\.ipa/${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa/g')"
+          MOD_LINE="$(ggrep -Po "\(https:\/\/links\.nekos\.space\/altstore\/install\?url=https:\/\/github\.com\/0t4u\/uYouPlus\/releases\/download\/v[0-9.]*-[0-9.]*-([0-9a-z]*)\/uYouPlus_[0-9.]*_[0-9.]*_[0-9a-z]*\.ipa\) \| \[!\[Build v16\]" README.md | sed 's/v[0-9.]*-[0-9.]*-([0-9a-z]*)/v${{ env.YOUTUBE_VERSION  }}-${{ env.UYOU_VERSION }}-(${{ env.SHORT_SHA }})/g' | sed 's/[0-9.]*_[0-9.]*_[0-9a-z]*\.ipa/${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa/g')"
           ESCAPED_MOD=$(printf '%s\n' "$MOD_LINE" | sed -e 's/[]\/$*.^[]/\\&/g')
           cat README.md | sed "s/$ESCAPED_ORIG/$ESCAPED_MOD/g" > README.temp.md
           mv README.temp.md README.md
