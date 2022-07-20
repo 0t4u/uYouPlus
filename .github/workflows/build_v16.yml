@@ -92,13 +92,13 @@ jobs:
           cd ${{ github.workspace }}/main
           (cd ${{ github.workspace }}/main/Tweaks/YouPiP && sed -i '' "14s/$/ AVFoundation UIKit/" Makefile)
           make package FINALPACKAGE=1
-          (mv "packages/$(ls -t packages | head -n1)" "packages/uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}.ipa")
+          (mv "packages/$(ls -t packages | head -n1)" "packages/uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa")
           echo "::set-output name=package::$(ls -t packages | head -n1)"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}
+          name: uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}
           path: ${{ github.workspace }}/main/packages/${{ steps.build_package.outputs.package }}
           if-no-files-found: error
 
@@ -106,9 +106,9 @@ jobs:
         id: create_release
         uses: actions/create-release@v1          
         with:
-          tag_name: v${{ env.YOUTUBE_VERSION }}-${{ env.UYOU_VERSION }}-(${{ github.run_number }})
-          release_name: v${{ env.YOUTUBE_VERSION }}-${{ env.UYOU_VERSION }}-(${{ github.run_number }})
-          draft: true
+          tag_name: v${{ env.YOUTUBE_VERSION }}-${{ env.UYOU_VERSION }}-(${{ env.SHORT_SHA }})
+          release_name: v${{ env.YOUTUBE_VERSION }}-${{ env.UYOU_VERSION }}-(${{ env.SHORT_SHA }})
+          draft: false
           prerelease: true
 
       - name: Upload Release Asset
@@ -116,5 +116,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/main/packages/${{ steps.build_package.outputs.package }}
-          asset_name: uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}.ipa
+          asset_name: uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa
           asset_content_type: application/vnd.debian.binary-package
