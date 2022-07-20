@@ -10,7 +10,7 @@ IPAs are built as it. No support will be provided.
 [Install on AltStore](https://links.nekos.space/altstore/install?url=https://nightly.link/0t4u/uYouPlus/workflows/build_v16/main/uYouPlus_16.42.3.zip)
 
 ## Versions
-| Youtube Version | Supported? | Build Status  |
+| Youtube Version | Dropped?   | Build Status  |
 | --------------- | ---------- | ------------- |
 | v16             |    ✔️     | [![Build v16](https://github.com/0t4u/uYouPlus/actions/workflows/build_v16.yml/badge.svg)](https://github.com/0t4u/uYouPlus/actions/workflows/build_v16.yml) |
 | v17             |    ❌     | Not Available  |
