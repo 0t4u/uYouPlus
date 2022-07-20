@@ -135,8 +135,8 @@ jobs:
           MOD_LINE="$(ggrep -Po "\(https:\/\/links\.nekos\.space\/altstore\/install\?url=https:\/\/github\.com\/0t4u\/uYouPlus\/releases\/download\/v[0-9.]*-[0-9.]*-\([0-9a-z]*\)\/uYouPlus_[0-9.]*_[0-9.]*_[0-9a-z]*\.ipa\) \| \[!\[Build v16\]" README.md | sed 's/v[0-9.]*-[0-9.]*-\([0-9a-z]*\)/v${{ env.YOUTUBE_VERSION  }}-${{ env.UYOU_VERSION }}-(${{ env.SHORT_SHA }})/g' | sed 's/[0-9.]*_[0-9.]*_[0-9a-z]*\.ipa/${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa/g')"
           echo "MOD_LINE=${MOD_LINE}" >> $GITHUB_ENV
           cat README.md | sed 's/${{ env.ORIG_LINE }}/${{ env.MOD_LINE }}/g' > README.md
-          - name: Commit & Push changes
-      - name: Update Main Links
+
+      - name: Commit & Push changes
         uses: actions-js/push@master
         with:
           github_token: ${{ secrets.PERSONAL_TOKEN }}
