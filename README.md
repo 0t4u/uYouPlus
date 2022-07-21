@@ -6,6 +6,10 @@ Please ask for help and report issues in the [original repository](https://githu
 
 IPAs are built as it. No support will be provided.
 
+## IPA Downloads
+
+Check the [releases](https://github.com/0t4u/uYouPlus/releases) for built IPAs.
+
 ## Versions
 | Youtube Version | Dropped?   | AltStore | Build Status  |
 | --------------- | ---------- | -------- | ------------- |
