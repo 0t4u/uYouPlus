@@ -42,6 +42,7 @@ jobs:
       - name: Checkout Main
         uses: actions/checkout@v3
         with:
+          ref: source
           path: main
           submodules: recursive
 
