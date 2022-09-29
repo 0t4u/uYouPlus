@@ -58,16 +58,15 @@ jobs:
 
       - name: Download iOS 15 SDK
         run: |
-          curl -LO https://github.com/chrisharper22/sdks/archive/main.zip
-          TMP=$(mktemp -d)
-          unzip -qq main.zip -d $TMP
-          mv $TMP/sdks-main/*.sdk $THEOS/sdks
-          rm -r main.zip $TMP
+          svn checkout -q https://github.com/chrisharper22/sdks/trunk/iPhoneOS15.5.sdk
+          mv *.sdk $THEOS/sdks
+        env:
+          THEOS: ${{ github.workspace }}/theos
           
       - name: Setup Theos Jailed
         uses: actions/checkout@v3
         with:
-          repository: kabiroberai/theos-jailed
+          repository: qnblackcat/theos-jailed
           ref: master
           path: theos-jailed
           submodules: recursive
@@ -75,6 +74,9 @@ jobs:
       - name: Install Theos Jailed
         run: |
           ./theos-jailed/install
+        env:
+          THEOS: ${{ github.workspace }}/theos
+          
       - name: Download uYou & prepare YouTube iPA
         run: |
           curl "https://raw.githubusercontent.com/Muirey03/RemoteLog/master/RemoteLog.h" --output "$THEOS/include/RemoteLog.h"
@@ -84,6 +86,7 @@ jobs:
           unzip -q ./${{ env.BRANCH }}/YouTube.ipa -d ./${{ env.BRANCH }}/tmp
           rm -rf ./${{ env.BRANCH }}/tmp/Payload/YouTube.app/PlugIns/*
           cp -R ./${{ env.BRANCH }}/Extensions/*.appex ./${{ env.BRANCH }}/tmp/Payload/YouTube.app/PlugIns
+          
       - name: Fix compiling && Build Package
         id: build_package
         run: |
@@ -92,6 +95,7 @@ jobs:
           make package FINALPACKAGE=1
           (mv "packages/$(ls -t packages | head -n1)" "packages/uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa")
           echo "::set-output name=package::$(ls -t packages | head -n1)"
+          
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
