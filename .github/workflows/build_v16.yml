@@ -1,0 +1,143 @@
+# Build uYouPlus using YouTube v16
+
+name: Build v16
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches:
+      - 'source'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+env: 
+  # UYOU_VERSION is dynamic
+  YOUTUBE_VERSION: "16.42.3"
+  YOUTUBE_URL: "https://objects.n23.io/4bcb968ea2654ee1be650d6be455725e:bucket1/YouTube_16.42.3.ipa"
+  THEOS: ${{ github.workspace }}/theos
+  GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+  BRANCH: "source"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build uYouPlus
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.BRANCH }}
+          path: ${{ env.BRANCH }}
+          submodules: recursive
+          
+      - name: Setup ENVs
+        run: | 
+          brew install grep
+          UYOU_VERSION="$(curl -s "https://raw.githubusercontent.com/MiRO92/uYou-for-YouTube/main/README.md" 2>&1 | ggrep -Po "https:\/\/miro92\.com\/repo\/depictions\/com\.miro\.uyou\/iPA\/YouTube_[0-9.]*_uYou_[0-9.]*\.ipa" | ggrep -Po "uYou_[0-9.]*[^.ipa]" | head -1 | tr -d "uYou_")"
+          echo "UYOU_VERSION=${UYOU_VERSION}" >> $GITHUB_ENV
+          echo "SHORT_SHA=`echo ${GITHUB_SHA::7}`" >> $GITHUB_ENV
+      - name: Install Dependencies
+        run: |
+          brew install ldid dpkg make
+          export PATH="/usr/local/opt/make/libexec/gnubin:$PATH"
+      - name: Setup Theos
+        uses: actions/checkout@v3
+        with:
+          repository: theos/theos
+          ref: master
+          path: theos
+          submodules: recursive
+
+      - name: Download iOS 15 SDK
+        run: |
+          svn checkout -q https://github.com/chrisharper22/sdks/trunk/iPhoneOS15.5.sdk
+          mv *.sdk $THEOS/sdks
+        env:
+          THEOS: ${{ github.workspace }}/theos
+          
+      - name: Setup Theos Jailed
+        uses: actions/checkout@v3
+        with:
+          repository: qnblackcat/theos-jailed
+          ref: master
+          path: theos-jailed
+          submodules: recursive
+
+      - name: Install Theos Jailed
+        run: |
+          ./theos-jailed/install
+        env:
+          THEOS: ${{ github.workspace }}/theos
+          
+      - name: Download uYou & prepare YouTube iPA
+        run: |
+          curl "https://raw.githubusercontent.com/Muirey03/RemoteLog/master/RemoteLog.h" --output "$THEOS/include/RemoteLog.h"
+          curl "https://miro92.com/repo/debs/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" --output "./${{ env.BRANCH }}/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb"
+          wget "$YOUTUBE_URL" --no-verbose -O ./${{ env.BRANCH }}/YouTube.ipa
+          dpkg-deb -x "./${{ env.BRANCH }}/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" ./${{ env.BRANCH }}/Tweaks/uYou/
+          unzip -q ./${{ env.BRANCH }}/YouTube.ipa -d ./${{ env.BRANCH }}/tmp
+          rm -rf ./${{ env.BRANCH }}/tmp/Payload/YouTube.app/PlugIns/*
+          cp -R ./${{ env.BRANCH }}/Extensions/*.appex ./${{ env.BRANCH }}/tmp/Payload/YouTube.app/PlugIns
+          
+      - name: Fix compiling && Build Package
+        id: build_package
+        run: |
+          cd ${{ github.workspace }}/${{ env.BRANCH }}
+          (cd ${{ github.workspace }}/${{ env.BRANCH }}/Tweaks/YouPiP && sed -i '' "14s/$/ AVFoundation UIKit/" Makefile)
+          make package FINALPACKAGE=1
+          (mv "packages/$(ls -t packages | head -n1)" "packages/uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa")
+          echo "::set-output name=package::$(ls -t packages | head -n1)"
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: uYouPlus_${{ env.YOUTUBE_VERSION  }}
+          path: ${{ github.workspace }}/${{ env.BRANCH }}/packages/${{ steps.build_package.outputs.package }}
+          if-no-files-found: error
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1          
+        with:
+          tag_name: v${{ env.YOUTUBE_VERSION }}-${{ env.UYOU_VERSION }}-(${{ env.SHORT_SHA }})
+          release_name: v${{ env.YOUTUBE_VERSION }}-${{ env.UYOU_VERSION }}-(${{ env.SHORT_SHA }})
+          draft: false
+          prerelease: true
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/${{ env.BRANCH }}/packages/${{ steps.build_package.outputs.package }}
+          asset_name: uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa
+          asset_content_type: application/vnd.debian.binary-package
+
+      - name: Checkout Main
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          path: main
+
+      - name: Modify Main README
+        run: |
+          cd main
+          ORIG_LINE="$(ggrep -Po "\(https:\/\/links\.nekos\.space\/altstore\/install\?url=https:\/\/github\.com\/0t4u\/uYouPlus\/releases\/download\/v[0-9.]*-[0-9.]*-\([0-9a-z]*\)\/uYouPlus_[0-9.]*_[0-9.]*_[0-9a-z]*\.ipa\) \| \[!\[Build v16\]" README.md)"
+          ESCAPED_ORIG=$(printf '%s\n' "$ORIG_LINE" | sed -e 's/[]\/$*.^[]/\\&/g')
+          MOD_LINE="$(ggrep -Po "\(https:\/\/links\.nekos\.space\/altstore\/install\?url=https:\/\/github\.com\/0t4u\/uYouPlus\/releases\/download\/v[0-9.]*-[0-9.]*-\([0-9a-z]*\)\/uYouPlus_[0-9.]*_[0-9.]*_[0-9a-z]*\.ipa\) \| \[!\[Build v16\]" README.md | sed 's/v[0-9.]*-[0-9.]*-([0-9a-z]*)/v${{ env.YOUTUBE_VERSION  }}-${{ env.UYOU_VERSION }}-(${{ env.SHORT_SHA }})/g' | sed 's/[0-9.]*_[0-9.]*_[0-9a-z]*\.ipa/${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa/g')"
+          ESCAPED_MOD=$(printf '%s\n' "$MOD_LINE" | sed -e 's/[]\/$*.^[]/\\&/g')
+          cat README.md | sed "s/$ESCAPED_ORIG/$ESCAPED_MOD/g" > README.temp.md
+          mv README.temp.md README.md
+      - name: Commit & Push changes
+        uses: actions-js/push@master
+        with:
+          directory: main
+          github_token: ${{ secrets.PERSONAL_TOKEN }}
+          message: "bot: auto update links"
