@@ -127,8 +127,7 @@ static BOOL oldDarkTheme() {
 %end
 
 %hook YTReelContentView
-- (void)didTapOverflowButton:(id)sender {
-}
+- (void)didTapOverflowButton:(id)sender {}
 %end
 
 %hook NSLayoutConstraint
@@ -213,6 +212,15 @@ static BOOL didFinishLaunching;
         MSHookIvar<UILabel *>(self, "_rLabel").textColor = [UIColor whiteColor];
         MSHookIvar<UILabel *>(self, "_cLabel").textColor = [UIColor whiteColor];
     }
+}
+%end
+
+// Remove uYou download button in playlists
+// https://github.com/qnblackcat/uYouPlus/issues/798#issuecomment-1364853420
+%hook YTPlaylistHeaderViewController
+- (void)viewDidLoad {
+    %orig;
+    self.downloadsButton.hidden = YES;
 }
 %end
 
@@ -439,8 +447,11 @@ static BOOL didFinishLaunching;
 - (BOOL)respectDeviceCaptionSetting { return NO; } // YouRememberCaption: https://poomsmart.github.io/repo/depictions/youremembercaption.html
 - (BOOL)isLandscapeEngagementPanelSwipeRightToDismissEnabled { return YES; } // Swipe right to dismiss the right panel in fullscreen mode
 - (BOOL)mainAppCoreClientIosTransientVisualGlitchInPivotBarFix { return NO; } // Fix uYou's label glitching - qnblackcat/uYouPlus#552
-- (BOOL)enableSwipeToRemoveInPlaylistWatchEp { return YES; } // Enable swipe right to remove video in Playlist. 
-- (BOOL)iosEnableShortsPlayerSplitViewController { return NO; } // Fix uYou's button missing in Shorts
+- (BOOL)enableSwipeToRemoveInPlaylistWatchEp { return YES; } // Enable swipe right to remove video in Playlist.
+%end
+
+%hook YTHotConfig
+- (BOOL)iosEnableShortsPlayerSplitViewController { return NO; } // Fix uYou's button missing in Shorts: qnblackcat/uYouPlus#800
 %end
 
 // NOYTPremium - https://github.com/PoomSmart/NoYTPremium/
@@ -596,7 +607,7 @@ static NSLayoutConstraint *widthConstraint, *heightConstraint, *centerXConstrain
     renderingView = [playerView renderingView];
 
     // Making renderingView a bit larger since constraining to safe area leaves a gap between the notch and video
-    CGFloat constant = 24.5; // Tested on iPhone 13 mini
+    CGFloat constant = 22.0; // Tested on iPhone 13 mini & 14 Pro Max
 
     widthConstraint = [renderingView.widthAnchor constraintEqualToAnchor:renderingViewContainer.safeAreaLayoutGuide.widthAnchor constant:constant];
     heightConstraint = [renderingView.heightAnchor constraintEqualToAnchor:renderingViewContainer.safeAreaLayoutGuide.heightAnchor constant:constant];
@@ -1272,6 +1283,9 @@ UIColor* raisedColor = [UIColor colorWithRed:0.035 green:0.035 blue:0.035 alpha:
 
 # pragma mark - ctor
 %ctor {
+    // Load uYou first so its functions are available for hooks.
+    dlopen([[NSString stringWithFormat:@"%@/Frameworks/uYou.dylib", [[NSBundle mainBundle] bundlePath]] UTF8String], RTLD_LAZY);
+
     %init;
     if (@available(iOS 16, *)) {
        %init(iOS16);
@@ -1306,6 +1320,9 @@ UIColor* raisedColor = [UIColor colorWithRed:0.035 green:0.035 blue:0.035 alpha:
     if (IsEnabled(@"disableHints_enabled")) {
         %init(gDisableHints);
     }
+
+    // Disable updates
+    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"automaticallyCheckForUpdates"];
  
     // Disable broken options of uYou
     [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"removeYouTubeAds"];
@@ -1313,13 +1330,14 @@ UIColor* raisedColor = [UIColor colorWithRed:0.035 green:0.035 blue:0.035 alpha:
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"showedWelcomeVC"];
     
     // Change the default value of some uYou's options
-    if (![[[[NSUserDefaults standardUserDefaults] dictionaryRepresentation] allKeys] containsObject:@"relatedVideosAtTheEndOfYTVideos"]) { 
+    NSArray *allKeys = [[[NSUserDefaults standardUserDefaults] dictionaryRepresentation] allKeys];
+    if (![allKeys containsObject:@"relatedVideosAtTheEndOfYTVideos"]) { 
        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"relatedVideosAtTheEndOfYTVideos"]; 
     }
-    if (![[[[NSUserDefaults standardUserDefaults] dictionaryRepresentation] allKeys] containsObject:@"uYouButtonVideoControlsOverlay"]) { 
+    if (![allKeys containsObject:@"uYouButtonVideoControlsOverlay"]) { 
        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"uYouButtonVideoControlsOverlay"]; 
     }
-    if (![[[[NSUserDefaults standardUserDefaults] dictionaryRepresentation] allKeys] containsObject:@"uYouPiPButtonVideoControlsOverlay"]) { 
+    if (![allKeys containsObject:@"uYouPiPButtonVideoControlsOverlay"]) { 
        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"uYouPiPButtonVideoControlsOverlay"]; 
     }
 }
