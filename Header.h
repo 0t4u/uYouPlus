@@ -13,6 +13,9 @@
 @end
 
 // uYouPlus
+@interface YTChipCloudCell : UIView
+@end
+
 @interface YTPlayabilityResolutionUserActionUIController : NSObject // Skips content warning before playing *some videos - @PoomSmart
 - (void)confirmAlertDidPressConfirm;
 @end 
@@ -144,7 +147,16 @@ void DEMC_centerRenderingView();
 - (void)singleVideo:(id)video playbackRateDidChange:(float)rate;
 @end
 
-// OLED Darkmode
+// App Theme
+@interface YCHLiveChatView : UIView
+@end
+
+@interface YTFullscreenEngagementOverlayView : UIView
+@end
+
+@interface YTRelatedVideosView : UIView
+@end
+
 @interface ELMView : UIView
 @end
 
