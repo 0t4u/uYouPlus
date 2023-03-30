@@ -13,6 +13,6 @@ Check the [releases](https://github.com/0t4u/uYouPlus/releases) for built IPAs.
 ## Versions
 | Youtube Version | Dropped?   | AltStore | Build Status  |
 | --------------- | ---------- | -------- | ------------- |
-| v16             |    ✔️     | [Install](https://links.nekos.space/altstore/install?url=https://github.com/0t4u/uYouPlus/releases/download/v16.42.3-2.1-(b3d3883)/uYouPlus_16.42.3_2.1_b3d3883.ipa) | [![Build v16](https://github.com/0t4u/uYouPlus/actions/workflows/build_v16.yml/badge.svg)](https://github.com/0t4u/uYouPlus/actions/workflows/build_v16.yml) |
+| v16             |    ✔️     | [Install](https://links.nekos.space/altstore/install?url=https://github.com/0t4u/uYouPlus/releases/download/v16.42.3-2.1-(7dc3278)/uYouPlus_16.42.3_2.1_7dc3278.ipa) | [![Build v16](https://github.com/0t4u/uYouPlus/actions/workflows/build_v16.yml/badge.svg)](https://github.com/0t4u/uYouPlus/actions/workflows/build_v16.yml) |
 | v17             |    ❌     | None     | Not Available  |
 | v18             |    ❌     | None     | Not Available  |
