@@ -1,6 +1,6 @@
 # Build uYouPlus using YouTube v17
 
-name: Build v16
+name: Build v17
 
 # Controls when the workflow will run
 on:
