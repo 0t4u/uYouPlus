@@ -5,7 +5,6 @@
 #import <sys/utsname.h>
 #import <substrate.h>
 #import "Header.h"
-#import "Tweaks/FLEX/FLEX.h"
 #import "Tweaks/YouTubeHeader/YTVideoQualitySwitchOriginalController.h"
 #import "Tweaks/YouTubeHeader/YTPlayerViewController.h"
 #import "Tweaks/YouTubeHeader/YTWatchController.h"
@@ -199,15 +198,15 @@ static BOOL didFinishLaunching;
     self.downloadsVC = [self.downloadsVC init];
 
     if (IsEnabled(@"flex_enabled")) {
-        [[FLEXManager sharedManager] showExplorer];
+        [[%c(FLEXManager) performSelector:@selector(sharedManager)] performSelector:@selector(showExplorer)];
     }
 
     return didFinishLaunching;
 }
 - (void)appWillResignActive:(id)arg1 {
     %orig;
-         if (IsEnabled(@"flex_enabled")) {
-         [[FLEXManager sharedManager] showExplorer];
+    if (IsEnabled(@"flex_enabled")) {
+        [[%c(FLEXManager) performSelector:@selector(sharedManager)] performSelector:@selector(showExplorer)];
     }
 }
 %end
@@ -269,31 +268,7 @@ static BOOL didFinishLaunching;
 }
 %end
 
-// Fix "Google couldn't confirm this attempt to sign in is safe. If you think this is a mistake, you can close and try again to sign in" - qnblackcat/uYouPlus#420
-// Thanks to @AhmedBafkir and @kkirby - https://github.com/qnblackcat/uYouPlus/discussions/447#discussioncomment-3672881
-%group gFixGoogleSignIn
-%hook SSORPCService
-+ (id)URLFromURL:(id)arg1 withAdditionalFragmentParameters:(NSDictionary *)arg2 {
-    NSURL *orig = %orig;
-    NSURLComponents *urlComponents = [[NSURLComponents alloc] initWithURL:orig resolvingAgainstBaseURL:NO];
-    NSMutableArray *newQueryItems = [urlComponents.queryItems mutableCopy];
-    for (NSURLQueryItem *queryItem in urlComponents.queryItems) {
-        if ([queryItem.name isEqualToString:@"system_version"]
-         || [queryItem.name isEqualToString:@"app_version"]
-         || [queryItem.name isEqualToString:@"kdlc"]
-         || [queryItem.name isEqualToString:@"kss"]
-         || [queryItem.name isEqualToString:@"lib_ver"]
-         || [queryItem.name isEqualToString:@"device_model"]) {
-            [newQueryItems removeObject:queryItem];
-        }
-    }
-    urlComponents.queryItems = [newQueryItems copy];
-    return urlComponents.URL;
-}
-%end
-%end
-
-// Hide YouTube Shorts banner in Home page? - @MiRO92 - YTNoShorts: https://github.com/MiRO92/YTNoShorts
+// Hide YouTube annoying banner in Home page? - @MiRO92 - YTNoShorts: https://github.com/MiRO92/YTNoShorts
 %hook YTAsyncCollectionView
 - (id)cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     UICollectionViewCell *cell = %orig;
@@ -307,7 +282,6 @@ static BOOL didFinishLaunching;
     }
     return %orig;
 }
-
 %new
 - (void)removeShortsAndFeaturesAdsAtIndexPath:(NSIndexPath *)indexPath {
         [self deleteItemsAtIndexPaths:[NSArray arrayWithObject:indexPath]];
@@ -375,6 +349,13 @@ static BOOL didFinishLaunching;
     if ([key isEqualToString:@"CFBundleDisplayName"] || [key isEqualToString:@"CFBundleName"])
         return YT_NAME;
     return %orig;
+}
+// Fix Google Sign in by @PoomSmart and @level3tjg (qnblackcat/uYouPlus#684)
+- (NSDictionary *)infoDictionary {
+    NSMutableDictionary *info = %orig.mutableCopy;
+    NSString *altBundleIdentifier = info[@"ALTBundleIdentifier"];
+    if (altBundleIdentifier) info[@"CFBundleIdentifier"] = altBundleIdentifier;
+    return info;
 }
 %end
 
@@ -463,11 +444,6 @@ static BOOL didFinishLaunching;
 - (BOOL)respectDeviceCaptionSetting { return NO; } // YouRememberCaption: https://poomsmart.github.io/repo/depictions/youremembercaption.html
 - (BOOL)isLandscapeEngagementPanelSwipeRightToDismissEnabled { return YES; } // Swipe right to dismiss the right panel in fullscreen mode
 - (BOOL)mainAppCoreClientIosTransientVisualGlitchInPivotBarFix { return NO; } // Fix uYou's label glitching - qnblackcat/uYouPlus#552
-- (BOOL)enableSwipeToRemoveInPlaylistWatchEp { return YES; } // Enable swipe right to remove video in Playlist.
-%end
-
-%hook YTHotConfig
-- (BOOL)iosEnableShortsPlayerSplitViewController { return NO; } // Fix uYou's button missing in Shorts: qnblackcat/uYouPlus#800
 %end
 
 // NOYTPremium - https://github.com/PoomSmart/NoYTPremium/
@@ -870,6 +846,21 @@ void DEMC_centerRenderingView() {
 }
 %end
 
+// YTStockVolumeHUD - https://github.com/lilacvibes/YTStockVolumeHUD
+%group gStockVolumeHUD
+%hook YTVolumeBarView
+- (void)volumeChanged:(id)arg1 {
+	%orig(nil);
+}
+%end
+
+%hook UIApplication 
+- (void)setSystemVolumeHUDEnabled:(BOOL)arg1 forAudioCategory:(id)arg2 {
+	%orig(true, arg2);
+}
+%end
+%end
+
 // Video Controls Overlay Options
 // Hide CC / Autoplay switch
 %hook YTMainAppControlsOverlayView
@@ -951,10 +942,25 @@ void DEMC_centerRenderingView() {
 }
 %end
 
+%hook YTHotConfig
+- (BOOL)iosEnableShortsPlayerSplitViewController { 
+    return IsEnabled(@"hideuYouShortsDownloadButton_enabled") ? YES : NO;
+}
+%end
+
 %hook _ASDisplayView
 - (void)didMoveToWindow {
     %orig;
-    if ((IsEnabled(@"hideBuySuperThanks_enabled")) && ([self.accessibilityIdentifier isEqualToString:@"id.elements.components.suggested_action"])) { self.hidden = YES; }
+    if ((IsEnabled(@"hideBuySuperThanks_enabled")) && ([self.accessibilityIdentifier isEqualToString:@"id.elements.components.suggested_action"])) { 
+        self.hidden = YES; 
+    }
+}
+%end
+
+%hook YTReelWatchRootViewController
+- (void)setPausedStateCarouselView {
+    if (IsEnabled(@"hideSubcriptions_enabled")) {}
+    else { return %orig; }
 }
 %end
 
@@ -1026,16 +1032,6 @@ UIColor* raisedColor = [UIColor colorWithRed:0.035 green:0.035 blue:0.035 alpha:
     return self.pageStyle == 1 ? [UIColor blackColor] : %orig;
 }
 %end
-
-// Account view controller
-// %hook YTAccountPanelBodyViewController
-// - (UIColor *)backgroundColor:(NSInteger)pageStyle {
-//     if (pageStyle == 1) { 
-//         return [UIColor greenColor]; 
-//     }
-//         return %orig;
-// }
-// %end
 
 // Explore
 %hook ASScrollView 
@@ -1189,6 +1185,7 @@ UIColor* raisedColor = [UIColor colorWithRed:0.035 green:0.035 blue:0.035 alpha:
         if ([self.accessibilityIdentifier isEqualToString:@"id.comment.guidelines_text"]) { self.superview.backgroundColor = [UIColor blackColor]; }
         if ([self.accessibilityIdentifier isEqualToString:@"id.comment.channel_guidelines_bottom_sheet_container"]) { self.backgroundColor = [UIColor blackColor]; }
         if ([self.accessibilityIdentifier isEqualToString:@"id.comment.channel_guidelines_entry_banner_container"]) { self.backgroundColor = [UIColor blackColor]; }
+        if ([self.accessibilityIdentifier isEqualToString:@"id.comment.comment_group_detail_container"]) { self.backgroundColor = [UIColor clearColor]; }
     }
 }
 %end
@@ -1325,6 +1322,13 @@ UIColor* raisedColor = [UIColor colorWithRed:0.035 green:0.035 blue:0.035 alpha:
 %end
 %end
 
+// YT startup animation
+%hook YTColdConfig
+- (BOOL)mainAppCoreClientIosEnableStartupAnimation {
+    return IsEnabled(@"ytStartupAnimation_enabled") ? YES : NO;
+}
+%end
+
 # pragma mark - ctor
 %ctor {
     // Load uYou first so its functions are available for hooks.
@@ -1333,9 +1337,6 @@ UIColor* raisedColor = [UIColor colorWithRed:0.035 green:0.035 blue:0.035 alpha:
     %init;
     if (@available(iOS 16, *)) {
        %init(iOS16);
-    }
-    if (!IsEnabled(@"fixGoogleSignIn_enabled")) {
-       %init(gFixGoogleSignIn);
     }
     if (IsEnabled(@"reExplore_enabled")) {
        %init(gReExplore);
@@ -1369,6 +1370,9 @@ UIColor* raisedColor = [UIColor colorWithRed:0.035 green:0.035 blue:0.035 alpha:
     }
     if (IsEnabled(@"iPhoneLayout_enabled") && (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad)) {
        %init(giPhoneLayout);
+    }
+    if (IsEnabled(@"stockVolumeHUD_enabled")) {
+        %init(gStockVolumeHUD);
     }
 
     // Disable updates

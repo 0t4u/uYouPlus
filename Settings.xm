@@ -98,6 +98,17 @@ extern NSBundle *uYouPlusBundle();
                     return YES;
                 }
                 settingItemId:0],
+
+            [YTSettingsSectionItemClass switchItemWithTitle:LOC(@"STOCK_VOLUME_HUD")
+                titleDescription:LOC(@"STOCK_VOLUME_HUD_DESC")
+                accessibilityIdentifier:nil
+                switchOn:IsEnabled(@"stockVolumeHUD_enabled")
+                switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
+                    [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:@"stockVolumeHUD_enabled"];
+                    return YES;
+                }
+                settingItemId:0],
+
         ];
         YTSettingsPickerViewController *picker = [[%c(YTSettingsPickerViewController) alloc] initWithNavTitle:LOC(@"VIDEO_PLAYER_OPTIONS") pickerSectionTitle:nil rows:rows selectedItemIndex:NSNotFound parentResponder:[self parentResponder]];
         [settingsViewController pushViewController:picker];
@@ -286,7 +297,27 @@ extern NSBundle *uYouPlusBundle();
                     return YES;
                 }
                 settingItemId:0],
-                
+
+            [YTSettingsSectionItemClass switchItemWithTitle:LOC(@"HIDE_SUBCRIPTIONS")
+                titleDescription:LOC(@"HIDE_SUBCRIPTIONS_DESC")
+                accessibilityIdentifier:nil
+                switchOn:IsEnabled(@"hideSubcriptions_enabled")
+                switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
+                    [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:@"hideSubcriptions_enabled"];
+                    return YES;
+                }
+                settingItemId:0],
+
+            [YTSettingsSectionItemClass switchItemWithTitle:LOC(@"HIDE_UYOU_SHORTS_DOWNLOAD_BUTTON")
+                titleDescription:LOC(@"HIDE_UYOU_SHORTS_DOWNLOAD_BUTTON_DESC")
+                accessibilityIdentifier:nil
+                switchOn:IsEnabled(@"hideuYouShortsDownloadButton_enabled")
+                switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
+                    [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:@"hideuYouShortsDownloadButton_enabled"];
+                    return YES;
+                }
+                settingItemId:0],
+            
             [YTSettingsSectionItemClass switchItemWithTitle:LOC(@"DISABLE_RESUME_TO_SHORTS")
                 titleDescription:LOC(@"DISABLE_RESUME_TO_SHORTS_DESC")
                 accessibilityIdentifier:nil
@@ -384,12 +415,12 @@ extern NSBundle *uYouPlusBundle();
                 }
                 settingItemId:0],
 
-            [YTSettingsSectionItemClass switchItemWithTitle:LOC(@"FIX_GOOGLE_SIGNIN")
-                titleDescription:LOC(@"FIX_GOOGLE_SIGNIN_DESC")
+            [YTSettingsSectionItemClass switchItemWithTitle:LOC(@"ENABLE_YT_STARTUP_ANIMATION")
+                titleDescription:LOC(@"ENABLE_YT_STARTUP_ANIMATION_DESC")
                 accessibilityIdentifier:nil
-                switchOn:IsEnabled(@"fixGoogleSignIn_enabled")
+                switchOn:IsEnabled(@"ytStartupAnimation_enabled")
                 switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
-                    [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:@"fixGoogleSignIn_enabled"];
+                    [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:@"ytStartupAnimation_enabled"];
                     return YES;
                 }
                 settingItemId:0],
@@ -400,6 +431,16 @@ extern NSBundle *uYouPlusBundle();
                 switchOn:IsEnabled(@"hideChipBar_enabled")
                 switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
                     [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:@"hideChipBar_enabled"];
+                    return YES;
+                }
+                settingItemId:0],
+
+            [YTSettingsSectionItemClass switchItemWithTitle:LOC(@"IPHONE_LAYOUT")
+                titleDescription:LOC(@"IPHONE_LAYOUT_DESC")
+                accessibilityIdentifier:nil
+                switchOn:IsEnabled(@"iPhoneLayout_enabled")
+                switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
+                    [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:@"iPhoneLayout_enabled"];
                     return YES;
                 }
                 settingItemId:0],
@@ -424,20 +465,6 @@ extern NSBundle *uYouPlusBundle();
                 }
                 settingItemId:0],
         ];
-
-            if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-                YTSettingsSectionItem *ipadItem = [YTSettingsSectionItemClass switchItemWithTitle:LOC(@"IPHONE_LAYOUT")
-                    titleDescription:LOC(@"IPHONE_LAYOUT_DESC")
-                    accessibilityIdentifier:nil
-                    switchOn:IsEnabled(@"iPhoneLayout_enabled")
-                    switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
-                        [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:@"iPhoneLayout_enabled"];
-                        return YES;
-                    }
-                    settingItemId:0];
-        
-                rows = [rows arrayByAddingObject:ipadItem];
-            }
             
         YTSettingsPickerViewController *picker = [[%c(YTSettingsPickerViewController) alloc] initWithNavTitle:LOC(@"MISCELLANEOUS") pickerSectionTitle:nil rows:rows selectedItemIndex:NSNotFound parentResponder:[self parentResponder]];
         [settingsViewController pushViewController:picker];
