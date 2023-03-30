@@ -18,6 +18,8 @@ env:
   THEOS: ${{ github.workspace }}/theos
   GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
   BRANCH: "source"
+  BUNDLE_ID: "com.google.ios.youtube"
+  APP_NAME: "YouTube"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -55,8 +57,18 @@ jobs:
           ref: master
           path: theos
           submodules: recursive
+          
+      - name: Caching
+        id: SDK
+        uses: actions/cache@v3.2.0
+        env:
+          cache-name: iOS-15.5-SDK
+        with:
+          path: theos/sdks/
+          key: ${{ env.cache-name }}
 
       - name: Download iOS 15 SDK
+        if: steps.SDK.outputs.cache-hit != 'true'
         run: |
           svn checkout -q https://github.com/chrisharper22/sdks/trunk/iPhoneOS15.5.sdk
           mv *.sdk $THEOS/sdks
@@ -90,11 +102,14 @@ jobs:
       - name: Fix compiling && Build Package
         id: build_package
         run: |
-          cd ${{ github.workspace }}/${{ env.BRANCH }}
-          (cd ${{ github.workspace }}/${{ env.BRANCH }}/Tweaks/YouPiP && sed -i '' "14s/$/ AVFoundation UIKit/" Makefile)
-          make package FINALPACKAGE=1
-          (mv "packages/$(ls -t packages | head -n1)" "packages/uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa")
-          echo "::set-output name=package::$(ls -t packages | head -n1)"
+          cd ${{ github.workspace }}/main
+          sed -i '' "27s#.*#BUNDLE_ID = ${{ env.BUNDLE_ID }}#g" Makefile
+          sed -i '' "26s#.*#DISPLAY_NAME = ${{ env.APP_NAME }}#g" Makefile          
+          make package IPA=YouTube.ipa FINALPACKAGE=1
+          (mv "packages/$(ls -t packages | head -n1)" "packages/uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}.ipa")
+          echo "package=$(ls -t packages | head -n1)" >>$GITHUB_OUTPUT
+          echo -e "==> \033[1mSHASUM256: $(shasum -a 256 packages/*.ipa | cut -f1 -d' ')\033[0m"
+          echo -e "==> \033[1mBundle ID: ${{ env.BUNDLE_ID }}\033[0m"
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
