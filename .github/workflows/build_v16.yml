@@ -60,7 +60,7 @@ jobs:
           
       - name: Caching
         id: SDK
-        uses: actions/cache@v3.2.0
+        uses: actions/cache@v3
         env:
           cache-name: iOS-15.5-SDK
         with:
@@ -117,23 +117,22 @@ jobs:
           name: uYouPlus_${{ env.YOUTUBE_VERSION  }}
           path: ${{ github.workspace }}/${{ env.BRANCH }}/packages/${{ steps.build_package.outputs.package }}
           if-no-files-found: error
-
+          
+      - name: Rename Asset
+        run: |
+          mv ${{ github.workspace }}/${{ env.BRANCH }}/packages/${{ steps.build_package.outputs.package }} ${{ github.workspace }}/${{ env.BRANCH }}/packages/uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa
+          
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1          
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.YOUTUBE_VERSION }}-${{ env.UYOU_VERSION }}-(${{ env.SHORT_SHA }})
-          release_name: v${{ env.YOUTUBE_VERSION }}-${{ env.UYOU_VERSION }}-(${{ env.SHORT_SHA }})
+          name: v${{ env.YOUTUBE_VERSION }}-${{ env.UYOU_VERSION }}-(${{ env.SHORT_SHA }})
+          files: ${{ github.workspace }}/${{ env.BRANCH }}/packages/uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa
+          target_commitish: ${{ github.GITHUB_SHA }}
           draft: false
           prerelease: true
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/${{ env.BRANCH }}/packages/${{ steps.build_package.outputs.package }}
-          asset_name: uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_${{ env.SHORT_SHA }}.ipa
-          asset_content_type: application/vnd.debian.binary-package
+          generate_release_notes: true
 
       - name: Checkout Main
         uses: actions/checkout@v3
