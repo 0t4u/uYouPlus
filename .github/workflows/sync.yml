@@ -19,6 +19,8 @@ jobs:
       with:
         # sync action checks out your 'target_sync_branch' anyway
         ref:  source
+        # work around github limitations
+        persist-credentials: false
 
     # Step 2: run the sync action
     - name: Sync upstream changes
