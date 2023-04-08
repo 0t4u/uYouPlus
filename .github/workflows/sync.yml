@@ -32,6 +32,8 @@ jobs:
         target_repo_token: ${{ secrets.PERSONAL_TOKEN }}
         upstream_sync_branch: main
         upstream_sync_repo: qnblackcat/uYouPlus
+        git_config_user: 0t4u
+        git_config_email: 0t4u@users.noreply.github.com
       
     # Step 3: Display a sample message based on the sync output var 'has_new_commits'
     - name: New commits found
