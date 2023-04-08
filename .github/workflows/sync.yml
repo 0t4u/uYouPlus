@@ -29,11 +29,10 @@ jobs:
       uses: aormsby/Fork-Sync-With-Upstream-action@v3.2
       with:
         target_sync_branch: source
+        # REQUIRED 'target_repo_token' exactly like this!
         target_repo_token: ${{ secrets.GITHUB_TOKEN }}
         upstream_sync_branch: main
         upstream_sync_repo: qnblackcat/uYouPlus
-        git_config_user: 0t4u
-        git_config_email: 0t4u@users.noreply.github.com
 
       
     # Step 3: Display a sample message based on the sync output var 'has_new_commits'
