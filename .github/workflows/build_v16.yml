@@ -67,7 +67,7 @@ jobs:
           path: theos/sdks/
           key: ${{ env.cache-name }}
 
-      - name: Download iOS 16 SDK
+      - name: Download iOS 15 SDK
         if: steps.SDK.outputs.cache-hit != 'true'
         run: |
           svn checkout -q https://github.com/chrisharper22/sdks/trunk/iPhoneOS15.5.sdk
@@ -104,7 +104,8 @@ jobs:
         run: |
           cd ${{ github.workspace }}/${{ env.BRANCH }}
           sed -i '' "27s#.*#BUNDLE_ID = ${{ env.BUNDLE_ID }}#g" Makefile
-          sed -i '' "26s#.*#DISPLAY_NAME = ${{ env.APP_NAME }}#g" Makefile          
+          sed -i '' "26s#.*#DISPLAY_NAME = ${{ env.APP_NAME }}#g" Makefile
+          ls
           make package IPA=YouTube.ipa FINALPACKAGE=1
           (mv "packages/$(ls -t packages | head -n1)" "packages/uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}.ipa")
           echo "package=$(ls -t packages | head -n1)" >>$GITHUB_OUTPUT
