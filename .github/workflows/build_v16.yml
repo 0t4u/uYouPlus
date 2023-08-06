@@ -16,8 +16,8 @@ env:
   YOUTUBE_VERSION: "16.42.3"
   YOUTUBE_URL: "https://objects.n23.io/4bcb968ea2654ee1be650d6be455725e:bucket1/YouTube_16.42.3.ipa"
   GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+  THEOS: ${{ github.workspace }}/theos
   BRANCH: "source"
-  THEOS: ${{ github.workspace }}/${{ env.BRANCH }}/theos
   BUNDLE_ID: "com.google.ios.youtube"
   APP_NAME: "YouTube"
 
