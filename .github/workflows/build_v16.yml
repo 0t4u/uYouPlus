@@ -15,7 +15,7 @@ env:
   # UYOU_VERSION is dynamic
   YOUTUBE_VERSION: "16.42.3"
   YOUTUBE_URL: "https://objects.n23.io/4bcb968ea2654ee1be650d6be455725e:bucket1/YouTube_16.42.3.ipa"
-  THEOS: ${{ github.workspace }}/theos
+  THEOS: ${{ github.workspace }}/.theos
   GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
   BRANCH: "source"
   BUNDLE_ID: "com.google.ios.youtube"
