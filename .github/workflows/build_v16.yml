@@ -87,17 +87,17 @@ jobs:
         run: |
           ./theos-jailed/install
         env:
-          THEOS: ${{ github.workspace }}/theos
+          THEOS: ${{ github.workspace }}/.theos
           
       - name: Download uYou & prepare YouTube iPA
         run: |
           curl "https://raw.githubusercontent.com/Muirey03/RemoteLog/master/RemoteLog.h" --output "$THEOS/include/RemoteLog.h"
           curl "https://miro92.com/repo/debs/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" --output "./${{ env.BRANCH }}/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb"
           wget "$YOUTUBE_URL" --no-verbose -O ./${{ env.BRANCH }}/YouTube.ipa
-          dpkg-deb -x "./${{ env.BRANCH }}/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" ./${{ env.BRANCH }}/Tweaks/uYou/
-          unzip -q ./${{ env.BRANCH }}/YouTube.ipa -d ./${{ env.BRANCH }}/tmp
-          rm -rf ./${{ env.BRANCH }}/tmp/Payload/YouTube.app/PlugIns/*
-          cp -R ./${{ env.BRANCH }}/Extensions/*.appex ./${{ env.BRANCH }}/tmp/Payload/YouTube.app/PlugIns
+          dpkg-deb -x "${{ github.workspace }}/${{ env.BRANCH }}/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" ./${{ env.BRANCH }}/Tweaks/uYou/
+          unzip -q ${{ github.workspace }}/${{ env.BRANCH }}/YouTube.ipa -d ./${{ env.BRANCH }}/tmp
+          rm -rf ${{ github.workspace }}/${{ env.BRANCH }}/tmp/Payload/YouTube.app/PlugIns/*
+          cp -R ${{ github.workspace }}/${{ env.BRANCH }}/Extensions/*.appex ${{ github.workspace }}/${{ env.BRANCH }}/tmp/Payload/YouTube.app/PlugIns
           
       - name: Fix compiling && Build Package
         id: build_package
@@ -105,7 +105,6 @@ jobs:
           cd ${{ github.workspace }}/${{ env.BRANCH }}
           sed -i '' "27s#.*#BUNDLE_ID = ${{ env.BUNDLE_ID }}#g" Makefile
           sed -i '' "26s#.*#DISPLAY_NAME = ${{ env.APP_NAME }}#g" Makefile
-          ls ./.theos
           make package IPA=YouTube.ipa FINALPACKAGE=1
           (mv "packages/$(ls -t packages | head -n1)" "packages/uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}.ipa")
           echo "package=$(ls -t packages | head -n1)" >>$GITHUB_OUTPUT
