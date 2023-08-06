@@ -15,7 +15,7 @@ env:
   # UYOU_VERSION is dynamic
   YOUTUBE_VERSION: "16.42.3"
   YOUTUBE_URL: "https://objects.n23.io/4bcb968ea2654ee1be650d6be455725e:bucket1/YouTube_16.42.3.ipa"
-  THEOS: ${{ github.workspace }}/.theos
+  THEOS: ${{ github.workspace }}/${{ env.BRANCH }}/theos
   GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
   BRANCH: "source"
   BUNDLE_ID: "com.google.ios.youtube"
@@ -89,7 +89,7 @@ jobs:
         run: |
           curl "https://raw.githubusercontent.com/Muirey03/RemoteLog/master/RemoteLog.h" --output "$THEOS/include/RemoteLog.h"
           curl "https://miro92.com/repo/debs/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" --output "./${{ env.BRANCH }}/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb"
-          wget "$YOUTUBE_URL" --no-verbose -O ./${{ env.BRANCH }}/YouTube.ipa
+          wget "$YOUTUBE_URL" --no-verbose -O ${{ github.workspace }}/${{ env.BRANCH }}/YouTube.ipa
           dpkg-deb -x "${{ github.workspace }}/${{ env.BRANCH }}/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" ./${{ env.BRANCH }}/Tweaks/uYou/
           unzip -q ${{ github.workspace }}/${{ env.BRANCH }}/YouTube.ipa -d ./${{ env.BRANCH }}/tmp
           rm -rf ${{ github.workspace }}/${{ env.BRANCH }}/tmp/Payload/YouTube.app/PlugIns/*
