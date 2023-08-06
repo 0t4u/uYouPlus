@@ -28,7 +28,7 @@ concurrency:
 jobs:
   build:
     name: Build uYouPlus
-    runs-on: macos-latest
+    runs-on: macos-11
     permissions:
       contents: write
 
@@ -87,7 +87,6 @@ jobs:
           
       - name: Download uYou & prepare YouTube iPA
         run: |
-          $THEOS/bin/update-theos
           curl "https://raw.githubusercontent.com/Muirey03/RemoteLog/master/RemoteLog.h" --output "$THEOS/include/RemoteLog.h"
           curl "https://miro92.com/repo/debs/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb" --output "./${{ env.BRANCH }}/Tweaks/uYou/com.miro.uyou_${{ env.UYOU_VERSION }}_iphoneos-arm.deb"
           wget "$YOUTUBE_URL" --no-verbose -O ${{ github.workspace }}/${{ env.BRANCH }}/YouTube.ipa
