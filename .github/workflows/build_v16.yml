@@ -110,7 +110,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: uYouPlus_${{ env.YOUTUBE_VERSION  }}
+          name: uYouPlus_${{ env.YOUTUBE_VERSION  }}_${{ env.UYOU_VERSION }}_(${{ env.SHORT_SHA }})
           path: ${{ github.workspace }}/${{ env.BRANCH }}/packages/${{ steps.build_package.outputs.package }}
           if-no-files-found: error
           
